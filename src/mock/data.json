@@ -1,0 +1,44 @@
+{
+  "one": [
+    {
+      "name": "xixi",
+      "age": 18
+    },
+    {
+      "name": "lisi",
+      "age": 59
+    }
+  ],
+  "register": [
+    {
+      "id": 1,
+      "name": "admin",
+      "pwd": "123456abc"
+    },
+    {
+      "id": 2,
+      "name": "admin2",
+      "pwd": "123456abc"
+    },
+    {
+      "uname": "zx529@qq.com",
+      "pwd": "123456abc",
+      "id": 3
+    },
+    {
+      "uname": "feifei@qq.com",
+      "pwd": "123456abc",
+      "id": 4
+    },
+    {
+      "uname": "zxfei@qq.com",
+      "pwd": "123456abc",
+      "id": 5
+    },
+    {
+      "uname": "ff@qq.com",
+      "pwd": "123456abc",
+      "id": 6
+    }
+  ]
+}

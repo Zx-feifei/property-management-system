@@ -11,9 +11,9 @@
       <!-- 表单部分 -->
       <el-form ref="ruleFormRef" :model="ruleForm" status-icon :rules="rules" class="demo-ruleForm">
         <!-- 修改提示文字 并且修改type类型 与v-model绑定的数据 并且添加类名-->
-        <el-form-item prop="name" class="item-from">
+        <el-form-item prop="username" class="item-from">
           <label for="username">邮箱</label>
-          <el-input v-model="ruleForm.username" type="email" autocomplete="off" />
+          <el-input v-model="ruleForm.username" type="text" autocomplete="off" />
         </el-form-item>
         <el-form-item prop="password" class="item-from">
           <label for="password">密码</label>
@@ -38,9 +38,10 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from "vue";
-import type { FormInstance } from "element-plus";
-
+import { reactive, ref, onMounted } from "vue";
+import * as verification from '../../util/verification'
+import { ElMessage, FormInstance } from "element-plus";
+import link from '../../util/api'
 /**
  * 顶部切换变量
  */
@@ -67,21 +68,22 @@ const clickMenu = (data: any) => {
 const ruleFormRef = ref<FormInstance>();
 const checkName = (rule: any, value: any, callback: any) => {
   // 创建邮箱正则来进行邮箱格式校验
-  let reg = /^([a-zA-Z]|[0-9])(\w)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/
-
-  if (!value) {
+  // let reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/; 
+  if (value === '') {
     return callback(new Error("邮箱不能为空！！"));
-  } else if (!reg.test(value)) {
+    // 调用验证（注意删掉之前的取反）
+  } else if (verification.verificationEmail(value)) {
     return callback(new Error("邮箱格式有误！！"));
   } else {
     callback();
   }
 };
 const validatePass = (rule: any, value: any, callback: any) => {
-  let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,15}$/;// 验证密码 6至15位的字母+数字 
+  // let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,15}$/;// 验证密码 6至15位的字母+数字
   if (value === "") {
     callback(new Error("密码不能为空"));
-  } else if (!reg.test(value)) {
+    // 调用验证
+  } else if (verification.verificationPwd(value)) {
     callback(new Error("密码格式有误!6至15位的字母+数字"));
   } else {
     callback();
@@ -106,23 +108,52 @@ const ruleForm = reactive({
 const rules = reactive({
   password: [{ validator: validatePass, trigger: "blur" }],
   passwords: [{ validator: validatePass2, trigger: "blur" }],
-  name: [{ validator: checkName, trigger: "blur" }],
+  username: [{ validator: checkName, trigger: "blur" }],
 });
 const submitForm = (formEl: FormInstance | undefined) => {
-  console.log(formEl);
   if (!formEl) return;
-  formEl.validate((valid: any) => {
+  formEl.validate((valid) => {
     if (valid) {
-      console.log("提交了");
-      console.log(ruleForm);
+      // 判断是登录还是注册
+      if (model.value == "login") {
+        console.log("登录");
+      } else {
+        // 把要发送的数据拼装成一个对象
+        let data = {
+          uname: ruleForm.username,
+          pwd: ruleForm.password,
+        };
+        // 发送请求
+        link("/register", "POST", data).then((res: any) => {
+          // 判断数据是否为空 不为空表示注册成功
+          let data = res.data
+          // 转成成数组判断长度即可知道对象是否为空
+          if (Object.keys(data).length !== 0) {
+            console.log(data);
+            ElMessage.success('注册成功')
+            model.value = "login"
+            menuData.forEach((elem) => {
+              elem.current = false;
+            });
+            // 登录的状态变为true
+            menuData[0].current = true;
+            // 跳转到登录界面，让用户重新输入刚才的信息
+            ruleForm.username = ""
+            ruleForm.password = ""
+          } else {
+            ElMessage.error("注册失败")
+          }
+        });
+      }
     } else {
-      console.log("错误提交!");
+      console.log("注册失败!");
       return false;
     }
   });
 };
 
 </script>
+<!-- --save(默认,生产环境必备) 和--save-dev(只在开发阶段用一下)   -->
 <style lang="scss">
 .login {
   background-color: #7a7a88; //深蓝色
