@@ -1,7 +1,7 @@
 <template>
   <nav>
-    <router-link to="/login">登录</router-link> |
-    <router-link to="/register">注册</router-link>
+    <!-- <router-link to="/login">登录</router-link> |
+    <router-link to="/register">注册</router-link> -->
   </nav>
   <router-view />
 </template>
