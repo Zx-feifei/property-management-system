@@ -27,9 +27,13 @@
         </el-form-item>
         <!-- 设置按钮 -->
         <el-form-item>
-          <el-button type="danger" @click="submitForm(ruleFormRef)" class="login-btn block">{{ model === 'login' ? '登录'
-              : '注册'
-          }}</el-button>
+          <el-button type="danger" @click="submitForm(ruleFormRef)" :disabled="loginBtn" class="login-btn block">{{
+              model === 'login' ? '登录'
+                :
+                '注册'
+          }}
+
+          </el-button>
         </el-form-item>
       </el-form>
       <!-- 表单部分 -->
@@ -38,7 +42,7 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref, onMounted } from "vue";
+import { reactive, ref, watch } from "vue";
 import * as verification from '../../util/verification'
 import { ElMessage, FormInstance } from "element-plus";
 import link from '../../util/api'
@@ -51,7 +55,8 @@ const menuData = reactive([
 ]);
 // 当前状态
 const model = ref("login");
-
+// 按钮是否可点击
+let loginBtn = ref<boolean>(true)
 
 // 切换模块
 const clickMenu = (data: any) => {
@@ -105,6 +110,23 @@ const ruleForm = reactive({
   password: "",
   passwords: "",
 });
+// 对输入内容进行监听
+watch(ruleForm, (newVal) => {
+  if (model.value === 'login') {
+    if (newVal.username && newVal.password) {
+      loginBtn.value = false
+    } else {
+      loginBtn.value = true
+    }
+  } else {
+    // 注册
+    if (newVal.username !== "" && newVal.passwords !== "" && newVal.password !== "") {
+      loginBtn.value = false
+    } else {
+      loginBtn.value = true
+    }
+  }
+})
 const rules = reactive({
   password: [{ validator: validatePass, trigger: "blur" }],
   passwords: [{ validator: validatePass2, trigger: "blur" }],
@@ -138,8 +160,8 @@ const submitForm = (formEl: FormInstance | undefined) => {
             // 登录的状态变为true
             menuData[0].current = true;
             // 跳转到登录界面，让用户重新输入刚才的信息
-            ruleForm.username = ""
             ruleForm.password = ""
+
           } else {
             ElMessage.error("注册失败")
           }
